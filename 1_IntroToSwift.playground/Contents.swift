@@ -485,7 +485,7 @@ print("is same strings: \(isSameStrings)")
 // ***************** //
 
 func getUser() -> (firstName: String, lastName: String) {
-    (firstName: "Taylor", lastName: "Swift")
+    return (firstName: "Taylor", lastName: "Swift")
     // Shorthand:
     // (firstName: "Taylor", lastName: "Swift")
 }
@@ -571,6 +571,7 @@ do {
 // Checkpoint 4  //
 // Functions     //
 // ************* //
+
 enum SquareRootInput: Error {
     case OutOfBounds, NoRoot
 }
@@ -604,3 +605,454 @@ do {
 } catch SquareRootInput.NoRoot {
     print("No Root")
 }
+
+// ******** //
+// Closures //
+// ******** //
+
+let sayHello = {
+    print("Hi there!")
+}
+sayHello()
+
+let sayHelloWithParams = { (name: String) -> String in
+    "Hi \(name)"
+}
+sayHelloWithParams("Jack")
+
+// Function type annotation
+func getUserData(for name: String) -> String {
+    if (name == "Taylor Swift") {
+        return "Taylor Swift"
+    } else {
+        return "anonymous"
+    }
+}
+
+// External parameters names don't get carried over in
+// closures and when copying functions
+let nameData: (String) -> String = getUserData
+let userDataName = nameData("Taylor Swift")
+print(userDataName)
+
+// Example of closure vs function
+// Function version:
+let team = ["Gloria", "Suzanne", "Piper", "Tiffany", "Tasha"]
+func sortFn(name1: String, name2: String) -> Bool {
+    if name1 == "Suzanne" {
+        return true
+    } else if name2 == "Suzanne" {
+        return false
+    } else {
+        return name1 < name2
+    }
+}
+let sortedTeam = team.sorted(by: sortFn)
+print(sortedTeam)
+// Closure version:
+let sortedTeamClosure = team.sorted(by: {
+    (name1: String, name2: String) -> Bool in
+    if name1 == "Suzanne" {
+        return true
+    } else if name2 == "Suzanne" {
+        return false
+    } else {
+        return name1 < name2
+    }
+})
+print(sortedTeamClosure)
+// Closure short hand
+let sortedTeamClosureShortHand = team.sorted {
+    name1, name2 in
+    if name1 == "Suzanne" {
+        return true
+    } else if name2 == "Suzanne" {
+        return false
+    } else {
+        return name1 < name2
+    }
+}
+print(sortedTeamClosureShortHand)
+// Closure shortest
+let sortedTeamClosureShortestHand = team.sorted {
+    if $0 == "Suzanne" {
+        return true
+    } else if $1 == "Suzanne" {
+        return false
+    } else {
+        return $0 < $1
+    }
+}
+print(sortedTeamClosureShortestHand)
+let allUpperCase = team.map { $0.uppercased() }
+print(allUpperCase)
+
+// Closure example of a function that accepts a function
+func animate(duration: Int, animations: () -> Void) -> Void {
+    print("Starting a \(duration) animation")
+    return
+}
+// Call the function without closure:
+animate(duration: 5) {
+    print("Fade out")
+}
+
+func makeArray(size: Int, using generator: () -> Int) -> [Int] {
+    var nums: [Int] = []
+    
+    for _ in 0..<size {
+        let newNum = generator()
+        nums.append(newNum)
+    }
+    
+    return nums;
+}
+
+// shorthand
+let newArr = makeArray(size: 5) {
+    Int.random(in: 100...1000)
+}
+// long
+func getRandomInt() -> Int {
+    Int.random(in: 100...1000)
+}
+let newArrAgain = makeArray(size: 5, using: getRandomInt)
+print(newArr)
+print(newArrAgain)
+
+// Chaining closures
+func doImportantWork(first: () -> Void, second: () -> Void, third: () -> Void) -> Void {
+    print("Start First")
+    first()
+    print("Start Second")
+    second()
+    print("Start Third")
+    third()
+    print("Done")
+}
+// Verbose version
+doImportantWork(first: {
+    print("First")
+}, second: {
+    print("Second")
+}, third: {
+    print("Third")
+})
+// Shortest version
+doImportantWork {
+    print("First")
+} second: {
+    print("Second")
+} third: {
+    print("Third")
+}
+
+// ************* //
+// Checkpoint 5  //
+// Closures      //
+// ************* //
+
+let luckyNumbers = [7, 4, 38, 21, 16, 15, 12, 33, 31, 49]
+luckyNumbers.filter {
+    $0 % 2 != 0
+}.sorted {
+    $0 < $1
+}.map {
+    "\($0) is a lucky number"
+}.forEach { (luckyNum: String) in
+    print(luckyNum)
+}
+
+// ******* //
+// Structs //
+// ******* //
+// These are like classes and are preferred
+// Swift docs says to use this as much as possible
+// Use class if need obj compatibility and needs
+// Inheritance identification
+struct Album {
+    let title: String
+    let artist: String
+    let year: Int
+    
+    func printSummary() -> Void {
+        let summary = """
+            *********************
+             Album Details    
+             Title: \(title)
+             Artilst: \(artist)
+             Year: \(year)
+            **********************
+            """
+        print(summary)
+    }
+}
+let red = Album(title: "Red", artist: "Taylor Swift", year: 2012)
+let wings = Album(title: "Wings", artist: "BTS", year: 2016)
+print(red.title)
+red.printSummary()
+
+struct Employee {
+    let name: String
+    // This needs to be a var if the value will change
+    var vacationRemaining: Int
+    // Add mutating if changing a struct's variable
+    // Tip: If you assign a default value to a constant property, that will be removed from the initializer entirely.
+    // To assign a default but leave open the possibility of overriding it when needed, use a variable property.
+    mutating func takeVacation(days: Int) -> Void {
+        if vacationRemaining > days {
+            vacationRemaining -= days
+            print("I'm going on a vacaction")
+            print("vacation days remaining: \(vacationRemaining)")
+        } else {
+            print("Oops! No more vaction days")
+        }
+    }
+}
+// With Setter and Getter
+struct EmployeeWithGetterSetter {
+    let name: String
+    // This needs to be a var if the value will change
+    var vacationAllocated = 14
+    var vacationTaken = 0
+    var vacationRemaining: Int {
+        get {
+            vacationAllocated - vacationTaken
+        }
+        
+        set {
+            vacationAllocated = vacationTaken + newValue
+        }
+    }
+}
+// Use var if the structs instance is dynamic, let won't allow changes
+var john = Employee(name: "John Doe", vacationRemaining: 50)
+john.takeVacation(days: 10)
+print(john.vacationRemaining)
+john.vacationRemaining -= 10 // this also works to decrement the vacation
+print(john.vacationRemaining)
+// With setter / getter:
+var lewis = EmployeeWithGetterSetter(name: "lewis")
+print(lewis)
+lewis.vacationTaken += 4
+lewis.vacationRemaining = 5
+print("remaining:", lewis.vacationRemaining)
+print("allocated:", lewis.vacationAllocated)
+
+struct App {
+    var contacts: [String] = [] {
+        willSet {
+            print("Current value is: \(contacts)")
+            print("New value will be: \(newValue)")
+        }
+        didSet {
+            print("Current count is: \(contacts.count)")
+            print("Old value was: \(oldValue)")
+        }
+    }
+}
+var app = App()
+app.contacts.append("Adrian")
+
+// Custom Init for Structs
+struct Player {
+    let name: String
+    let number: Int
+}
+// This won't work since number is needed
+// let playerOne = Player(name: "One")
+struct PlayerWithCustomInit {
+    let name: String
+    let number: Int
+    
+    init(name: String = "Anonymous") {
+        self.name = name
+        self.number = Int.random(in: 1...10)
+    }
+}
+let playerOneCustom = PlayerWithCustomInit(name: "One")
+let playerTwoCustom = PlayerWithCustomInit()
+print(playerOneCustom)
+print(playerTwoCustom)
+// All properties must have a value when the initializer ends
+// Once a init function is added the default memberwise initializer
+// won't work anymore
+struct EmployeeDemo {
+    var name: String
+    var yearsActive = 0
+}
+// let roslin = EmployeeDemo(name: "Laura Roslin")
+// This won't work, for it to work we can use an extension
+extension EmployeeDemo {
+    init() {
+        self.name = "Anonymous"
+        print("Creating an anonymous employee…")
+    }
+}
+ let roslin = EmployeeDemo(name: "Laura Roslin")
+ let anon = EmployeeDemo()
+
+// ***************************************************** //
+// Structs access control, static properties and methods //
+// ***************************************************** //
+
+// Some swift access control and modifier
+// Use private for “don’t let anything outside the struct use this.”
+// Use fileprivate for “don’t let anything outside the current file use this.”
+// Use public for “let anyone, anywhere use this.”
+// Modifier
+// There is also a private(set) that allows you to access
+
+struct BankAccount {
+    // funds won't be accessible outside but if we add the (set)
+    // modifier funds will be accessible
+    private(set) var funds: Int = 0
+    
+    mutating func withdraw(amount: Int) -> Bool {
+        if (amount > funds) {
+            print("Insufficient funds")
+            return false
+        }
+        
+        funds -= amount
+        return true
+    }
+    
+    mutating func deposit(amount: Int) {
+        funds += amount
+    }
+}
+var myAccount = BankAccount()
+myAccount.deposit(amount: 100)
+// myAccount.funds += 1_000_000 won't work anymore
+print(myAccount.funds)
+
+struct Doctor {
+    var name: String
+    var location: String
+    private var currentPatient = "No one"
+}
+// This won't work because swift memberwise initializer can't access the private var
+// property a custom init function is needed
+//let drJones = Doctor(name: "Esther Jones", location: "Bristol")
+
+// ****************************** //
+// Static properties and methods  //
+// ****************************** //
+
+struct School {
+    static var studentCount = 0
+    
+    static func add(student: String) {
+        print("\(student) joined the school")
+        studentCount += 1
+    }
+}
+
+School.add(student: "Walter White")
+print(School.studentCount)
+
+/**
+ 
+ Notes:
+ - If you want to mix and match static and non-static properties and methods, there are two rules:
+ 
+ 1. To access non-static code from static code… you’re out of luck: static properties and methods can’t refer to non-static properties and
+    methods because it just doesn’t make sense – which instance of School would you be referring to?
+ 2. To access static code from non-static code, always use your type’s name such as School.studentCount. You can also use Self to refer to the current type.
+ 
+ Now we have self and Self, and they mean different things: self refers to the current value of the struct, and Self refers to the current type.
+
+ Tip: It’s easy to forget the difference between self and Self, but if you think about it it’s just like the rest of Swift’s naming – we start all our
+ data types with a capital letter (Int, Double, Bool, etc), so it makes sense for Self to start with a capital letter too.
+ 
+ 1. First, I use static properties to organize common data in my apps. For example, I might have a struct like AppData to store lots of shared values I use in many places:
+ 
+ struct AppData {
+     static let version = "1.3 beta 2"
+     static let saveFilename = "settings.json"
+     static let homeURL = "https://www.hackingwithswift.com"
+ }
+ 
+ 2. The second reason I commonly use static data is to create examples of my structs. As you’ll see later on, SwiftUI works best when
+ it can show previews of your app as you develop, and those previews often require sample data. For example,
+ if you’re showing a screen that displays data on one employee, you’ll want to be able to show an
+ example employee in the preview screen so you can check it all looks correct as you work.
+
+ This is best done using a static example property on the struct, like this:
+ 
+ struct Employee {
+     let username: String
+     let password: String
+
+     static let example = Employee(username: "cfederighi", password: "hairforceone")
+ }
+ 
+*/
+
+struct NewsStory {
+    static var breakingNewsCount = 0
+    static var regularNewsCount = 0
+    var headline: String
+    init(headline: String, isBreaking: Bool) {
+        self.headline = headline
+        if isBreaking {
+            NewsStory.breakingNewsCount += 1
+            // We can also use
+            // Self.breakingNewsCount += 1
+        } else {
+            NewsStory.regularNewsCount += 1
+            // We can also use
+            // Self.breakingNewsCount += 1
+        }
+    }
+}
+
+var news1 = NewsStory(headline: "news1", isBreaking: true)
+NewsStory.breakingNewsCount // 1
+var news2 = NewsStory(headline: "news2", isBreaking: true)
+NewsStory.breakingNewsCount // 2
+
+// ************ //
+// Checkpoint 6 //
+// Structs      //
+// ************ //
+
+struct Car {
+    let door: Int
+    let seat: Int
+    private(set) var currentGear: Int
+    
+    static let minGear = 1
+    static let maxGear = 10
+    
+    init(door: Int, seat: Int) {
+        self.door = door
+        self.seat = seat
+        self.currentGear = Car.minGear
+    }
+    
+    mutating func shiftUp() -> Void {
+        if currentGear == Car.maxGear {
+            print("already at the highest gear")
+        } else {
+            currentGear += 1
+        }
+    }
+    
+    mutating func shiftDown() -> Void {
+        if currentGear == Car.minGear {
+            print("already at the lowest gear")
+        } else {
+            currentGear -= 1
+        }
+    }
+}
+
+var sedan = Car(door: 4, seat: 5)
+sedan.shiftDown()
+print(sedan)
+
+// ******** //
+// Classes //
+// ********//
